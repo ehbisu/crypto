@@ -333,7 +333,7 @@ class _MyAppState extends State<MyApp> {
                 'assets/images/metamask.png', // Corrected to forward slashes
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.error, color: Colors.red, size: 30);
+                  return const Icon(Icons.error, color: Colors.red, size: 30);
                 },
               ),
             ),
@@ -348,8 +348,8 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
             // "Connected" Text wrapped with Expanded to prevent overflow
-            Expanded(
-              child: const Text(
+            const Expanded(
+              child: Text(
                 'Connected',
                 style: TextStyle(
                   color: Colors.green,
@@ -386,14 +386,14 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         padding: const EdgeInsets.all(10),
-        child: Row(
+        child: const Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               backgroundColor: Colors.blueAccent,
               child: Text('W', style: TextStyle(color: Colors.white)),
             ),
-            const SizedBox(width: 10),
-            const Column(
+            SizedBox(width: 10),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -406,7 +406,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            const Spacer(),
+            Spacer(),
             // Optionally, you can add more details here
           ],
         ),
