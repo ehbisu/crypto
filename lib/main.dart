@@ -24,6 +24,9 @@ class _MyAppState extends State<MyApp> {
     Text('Bank Page'),
   ];
 
+  // Define a constant for spacing between main sections
+  static const double _sectionSpacing = 30.0;
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -53,8 +56,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor:
-            const Color(0xFF0F1C33), // Dark blue background color
+        backgroundColor: const Color(0xFF0F1C33), // Dark blue background color
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -71,12 +73,12 @@ class _MyAppState extends State<MyApp> {
                   // Section: Profile and Balance as the Header
                   _buildProfileSection(),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: _sectionSpacing), // Increased spacing
 
                   // Section: Transaction widget
                   _buildTransactionWidget(context),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: _sectionSpacing), // Increased spacing
 
                   // Section: Wallet info
                   _buildWalletSection(),
@@ -93,8 +95,8 @@ class _MyAppState extends State<MyApp> {
             highlightColor: Colors.transparent,
           ),
           child: BottomNavigationBar(
-            backgroundColor:
-                const Color(0xFF0F1C33), // Same dark blue background as the app
+            backgroundColor: const Color.fromARGB(255, 24, 38, 64), // Slightly different dark blue shade for the BottomNavigationBar
+            iconSize: 30.0, // Icon size
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(Icons.attach_money),
@@ -109,6 +111,7 @@ class _MyAppState extends State<MyApp> {
                 label: '',
               ),
             ],
+
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
             showSelectedLabels: false, // Hide labels for cleaner look
@@ -168,7 +171,7 @@ class _MyAppState extends State<MyApp> {
   Widget _buildTransactionWidget(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1C33), // Dark blue background color
+        color: const Color.fromARGB(255, 34, 51, 82), // Dark blue background color
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: const Color(0xFFCCCC99), // Light yellow border color
@@ -240,8 +243,9 @@ class _MyAppState extends State<MyApp> {
       String selectedCurrency, Function(String?) onChanged) {
     return Container(
       decoration: BoxDecoration(
-        color:
-            const Color(0xFFCCCCCC), // Light gray background color for input field
+        color: Colors.white.withOpacity(0.02), // Super light transparent background
+        // Alternatively, use a semi-transparent color:
+        // color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
