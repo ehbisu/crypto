@@ -1,149 +1,105 @@
 import 'package:flutter/material.dart';
-import 'crypto.dart'; // Importa o arquivo crypto.dart
-import 'cadastro.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
-
-  @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _senhaController = TextEditingController();
-
-  bool _isObscured = true;
-  double _fontSize = 16;
-
-  // Função para exibir o AlertDialog
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Dados inválidos'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Função para verificar login
-  void _login() {
-    final email = _emailController.text;
-    final senha = _senhaController.text;
-
-    if (email == 'eumesmo@gmail.com' && senha == '12345') {
-      // Redirecionar para a página CryptoPage se o login for bem-sucedido
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const CryptoPage(),
-        ),
-      );
-    } else {
-      // Mostrar AlertDialog com mensagem de erro
-      _showErrorDialog('Usuário e/ou senha incorreto(a)');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF487187), // Set the background color
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            width: 300,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Campo de email
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'E-mail',
-                    labelStyle: TextStyle(fontSize: _fontSize),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(fontSize: _fontSize),
-                ),
-                const SizedBox(height: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo placeholder (adjust the size and path as needed)
+              Image.asset('assets/images/logo.png', height: 150),
 
-                // Campo de senha com exibição/ocultação
-                TextField(
-                  controller: _senhaController,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: TextStyle(fontSize: _fontSize),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isObscured ? Icons.visibility : Icons.visibility_off,
+              const SizedBox(height: 40), // Space between logo and form
+
+              // Main login section inside a container with a different background color
+              Container(
+                padding: const EdgeInsets.all(20.0),
+                width: 350,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2C44), // Secondary background color for the container
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    // Email field
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'E-mail',
+                        labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF0B2A45),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isObscured = !_isObscured;
-                        });
-                      },
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
                     ),
-                  ),
-                  obscureText: _isObscured,
-                  style: TextStyle(fontSize: _fontSize),
-                ),
-                const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                // Controle de tamanho da fonte
-                Text('Font Size: ${_fontSize.toStringAsFixed(0)}',
-                    style: TextStyle(fontSize: _fontSize)),
-                Slider(
-                  value: _fontSize,
-                  min: 12.0,
-                  max: 24.0,
-                  divisions: 6,
-                  label: _fontSize.toStringAsFixed(0),
-                  onChanged: (double newValue) {
-                    setState(() {
-                      _fontSize = newValue;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // Botão de login
-                ElevatedButton(
-                  onPressed: _login, // Chama a função de login
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 91, 44, 122),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(50),
-                  ),
-                  child: const Text('Sign-in'),
-                ),
-                const SizedBox(height: 20),
-
-                // Botão para cadastro
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CadastroPage(),
+                    // Password field with show/hide option
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
+                        suffixIcon: const Icon(Icons.visibility, color: Colors.white),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF0B2A45),
                       ),
-                    );
-                  },
-                  child: const Text('Don’t have an account? Register'),
+                      obscureText: true,
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Sign-in button
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/crypto'); // Navigate to CryptoPage
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFCCAC53), // Button color
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        minimumSize: const Size.fromHeight(50), // Make button full-width
+                      ),
+                      child: const Text('Sign-in', style: TextStyle(color: Colors.black)),
+                    ),
+
+                    const SizedBox(height: 20), // Add space between buttons
+
+                    // Register button
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/cadastro'); // Navigate to CadastroPage
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1C2C44), // Match background
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        side: const BorderSide(color: Colors.white), // Add border for contrast
+                        minimumSize: const Size.fromHeight(50), // Make button full-width
+                      ),
+                      child: const Text('Don’t have an account? Register', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
