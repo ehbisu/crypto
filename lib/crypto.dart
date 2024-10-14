@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'educacao.dart';
+import 'rendafixa.dart';
 
 class CryptoPage extends StatefulWidget {
   const CryptoPage({super.key});
@@ -14,11 +15,9 @@ class _CryptoPageState extends State<CryptoPage> {
   String _selectedCurrency1 = 'BRLA';
   String _selectedCurrency2 = 'GLQ';
 
-  static const List<Widget> _pages = <Widget>[
-    Text('Dollar Page'),
-    Text('Bitcoin Page'),
-    Text('Bank Page'),
-  ];
+  // Controllers for the input fields
+  final TextEditingController _amountController1 = TextEditingController();
+  final TextEditingController _amountController2 = TextEditingController();
 
   static const double _sectionSpacing = 30.0;
 
@@ -27,8 +26,12 @@ class _CryptoPageState extends State<CryptoPage> {
       _selectedIndex = index;
     });
 
-    if (index == 2) {
-      // Índice do ícone direito
+    if (index == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const RendaFixaPage()),
+      );
+    } else if (index == 2) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const EducacaoPage()),
@@ -50,6 +53,13 @@ class _CryptoPageState extends State<CryptoPage> {
         _selectedCurrency2 = newValue;
       });
     }
+  }
+
+  double _calculateGasFee() {
+    double amount = double.tryParse(_amountController1.text) ?? 0.0;
+    // Implement your gas fee calculation logic here
+    // For example, 1% of the amount
+    return amount * 0.01;
   }
 
   @override
@@ -168,18 +178,28 @@ class _CryptoPageState extends State<CryptoPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildDropdownInput(
-              context, 'BRLA', _selectedCurrency1, _onCurrency1Changed),
+            context,
+            'BRLA',
+            _selectedCurrency1,
+            _onCurrency1Changed,
+            _amountController1,
+          ),
           const SizedBox(height: 10),
           const Icon(Icons.arrow_downward, color: Colors.white),
           const SizedBox(height: 10),
           _buildDropdownInput(
-              context, 'GLQ', _selectedCurrency2, _onCurrency2Changed),
+            context,
+            'GLQ',
+            _selectedCurrency2,
+            _onCurrency2Changed,
+            _amountController2,
+          ),
           const SizedBox(height: 20),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Gas: 0.0',
-              style: TextStyle(color: Colors.white, fontSize: 14),
+              'Gas: ${_calculateGasFee().toStringAsFixed(2)}',
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ),
           const SizedBox(height: 20),
@@ -210,8 +230,13 @@ class _CryptoPageState extends State<CryptoPage> {
     );
   }
 
-  Widget _buildDropdownInput(BuildContext context, String currencyLabel,
-      String selectedCurrency, Function(String?) onChanged) {
+  Widget _buildDropdownInput(
+    BuildContext context,
+    String currencyLabel,
+    String selectedCurrency,
+    Function(String?) onChanged,
+    TextEditingController controller,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.02),
@@ -219,16 +244,23 @@ class _CryptoPageState extends State<CryptoPage> {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             flex: 3,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                '0.0',
-                style: TextStyle(
-                  color: Color(0xFF666666),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: TextField(
+                controller: controller,
+                style: const TextStyle(
+                  color: Colors.white,
                   fontSize: 18,
                 ),
+                decoration: const InputDecoration(
+                  hintText: '0.0',
+                  hintStyle: TextStyle(color: Colors.white54),
+                  border: InputBorder.none,
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
               ),
             ),
           ),
@@ -338,16 +370,16 @@ class _CryptoPageState extends State<CryptoPage> {
           ),
         ),
         padding: const EdgeInsets.all(10),
-        child: const Row(
+        child: Row(
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               backgroundColor: Colors.blueAccent,
               child: Text('W', style: TextStyle(color: Colors.white)),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: const [
                 Text(
                   'WECO',
                   style: TextStyle(color: Colors.white, fontSize: 16),
@@ -358,7 +390,7 @@ class _CryptoPageState extends State<CryptoPage> {
                 ),
               ],
             ),
-            Spacer(),
+            const Spacer(),
           ],
         ),
       ),

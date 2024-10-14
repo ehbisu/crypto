@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'crypto.dart';
+import 'rendafixa.dart';
 
 class EducacaoPage extends StatefulWidget {
   const EducacaoPage({super.key});
@@ -20,6 +21,12 @@ class _EducacaoPageState extends State<EducacaoPage> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const CryptoPage()),
+      );
+    }
+    if (index == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const RendaFixaPage()),
       );
     }
   }

@@ -32,8 +32,9 @@ class CadastroPage extends StatelessWidget {
                     // Name field
                     TextField(
                       decoration: InputDecoration(
-                        labelText: 'Name',
-                        labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
+                        labelText: 'Nome',
+                        labelStyle: const TextStyle(
+                            fontSize: 16, color: Colors.white),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -43,7 +44,8 @@ class CadastroPage extends StatelessWidget {
                         filled: true,
                         fillColor: const Color(0xFF0B2A45),
                       ),
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.white),
                     ),
                     const SizedBox(height: 20),
 
@@ -51,7 +53,8 @@ class CadastroPage extends StatelessWidget {
                     TextField(
                       decoration: InputDecoration(
                         labelText: 'E-mail',
-                        labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
+                        labelStyle: const TextStyle(
+                            fontSize: 16, color: Colors.white),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
@@ -62,28 +65,13 @@ class CadastroPage extends StatelessWidget {
                         fillColor: const Color(0xFF0B2A45),
                       ),
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.white),
                     ),
                     const SizedBox(height: 20),
 
-                    // Password field
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
-                        suffixIcon: const Icon(Icons.visibility, color: Colors.white),
-                        enabledBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0B2A45),
-                      ),
-                      obscureText: true,
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                    // Password field with show/hide option
+                    PasswordField(),
                     const SizedBox(height: 20),
 
                     // Register button
@@ -93,10 +81,12 @@ class CadastroPage extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFCCAC53),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30)),
                         minimumSize: const Size.fromHeight(50), // Make button full-width
                       ),
-                      child: const Text('Register', style: TextStyle(color: Colors.black)),
+                      child: const Text('Registrar',
+                          style: TextStyle(color: Colors.black)),
                     ),
                   ],
                 ),
@@ -104,20 +94,80 @@ class CadastroPage extends StatelessWidget {
 
               const SizedBox(height: 20), // Space between form and any additional content
 
-              // Go back to login button (optional)
+              // Go back to login button with styled "Entrar"
               TextButton(
                 onPressed: () {
                   Navigator.pop(context); // Navigate back to login
                 },
-                child: const Text(
-                  'Already have an account? Sign in',
-                  style: TextStyle(color: Colors.white),
+                child: RichText(
+                  text: TextSpan(
+                    text: 'Já tem uma conta? ',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'Entrar',
+                        style: TextStyle(
+                          color: Colors.yellow.shade200, // Softer yellow
+                          decoration: TextDecoration.none, // Removed underline
+                          fontWeight: FontWeight.w600, // Slightly bold
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Custom Password Field Widget with Show/Hide functionality
+class PasswordField extends StatefulWidget {
+  const PasswordField({super.key});
+
+  @override
+  _PasswordFieldState createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<PasswordField> {
+  bool _obscureText = true;
+
+  void _toggleVisibility(){
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return TextField(
+      decoration: InputDecoration(
+        labelText: 'Senha',
+        labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureText ? Icons.visibility_off : Icons.visibility,
+            color: Colors.white,
+          ),
+          onPressed: _toggleVisibility,
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        filled: true,
+        fillColor: const Color(0xFF0B2A45),
+      ),
+      obscureText: _obscureText,
+      style: const TextStyle(fontSize: 16, color: Colors.white),
     );
   }
 }
