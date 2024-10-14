@@ -177,6 +177,19 @@ class _CryptoPageState extends State<CryptoPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // **Added Title: Coin Swap**
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Crypto Swap',
+              style: TextStyle(
+                color: Colors.white, // Softer yellow
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20), // Space between title and inputs
           _buildDropdownInput(
             context,
             'BRLA',
