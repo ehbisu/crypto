@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 import 'crypto.dart';
 import 'cadastro.dart';
+// Importação de LocalStorageHelper não é necessária aqui a menos que seja usada diretamente no main
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Não é mais necessário inicializar o banco de dados
+  // Todas as operações de armazenamento serão feitas via SharedPreferences
+
   runApp(const MyApp());
 }
 
@@ -17,8 +23,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginPage(),
-        '/cadastro': (context) => const CadastroPage(),
-        '/crypto': (context) => const CryptoPage(), 
+        '/cadastro': (context) => CadastroPage(),
+        '/crypto': (context) => const CryptoPage(),
       },
     );
   }

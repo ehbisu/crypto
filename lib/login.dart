@@ -1,117 +1,83 @@
-import 'package:flutter/material.dart';
+// lib/pages/login_page.dart
 
-class LoginPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import '../local_storage_helper.dart';
+import '../hash_utils.dart'; // Utilidade de hash
+
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF487187), // Set the background color
+  _LoginPageState createState() => _LoginPageState();
+}
 
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo placeholder (adjust the size and path as needed)
-              Image.asset('assets/images/logo.png', height: 150),
+class _LoginPageState extends State<LoginPage> {
+  // Comentário em português: Controllers para campos de texto.
+  final TextEditingController _usuarioController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-              const SizedBox(height: 40), // Space between logo and form
+  bool _isLoading = false; // Indica se o login está em andamento
+  final LocalStorageHelper _storageHelper = LocalStorageHelper();
 
-              // Main login section inside a container with a different background color
-              Container(
-                padding: const EdgeInsets.all(20.0),
-                width: 350,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C2C44), // Secondary background color for the container
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    // Email field
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'E-mail',
-                        labelStyle: const TextStyle(
-                            fontSize: 16, color: Colors.white),
-                        enabledBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0B2A45),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(
-                          fontSize: 16, color: Colors.white),
-                    ),
-                    const SizedBox(height: 20),
+  void _loginUser() async {
+    String usuario = _usuarioController.text.trim();
+    String password = _passwordController.text.trim();
 
-                    // Password field with show/hide option
-                    PasswordField(),
-                    const SizedBox(height: 10),
+    print('Tentando fazer login com Usuário: $usuario e Senha: $password');
 
-                    // "Esqueceu sua senha?" text with updated styling
-                    HoverableText(
-                      text: 'Esqueceu sua senha?',
-                      onTap: () {
-                        _showForgotPasswordDialog(context);
-                      },
-                    ),
-                    const SizedBox(height: 20),
+    if (usuario.isEmpty || password.isEmpty) {
+      _showSnackBar('Por favor, preencha todos os campos.');
+      return;
+    }
 
-                    // Sign-in button
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/crypto'); // Navigate to CryptoPage
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFCCAC53), // Button color
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        minimumSize:
-                            const Size.fromHeight(50), // Make button full-width
-                      ),
-                      child: const Text('Entrar',
-                          style: TextStyle(color: Colors.black)),
-                    ),
+    setState(() {
+      _isLoading = true;
+    });
 
-                    const SizedBox(height: 20), // Add space between buttons
+    try {
+      // Recuperar dados do usuário
+      Map<String, dynamic>? userData = await _storageHelper.getUserData();
+      print('Dados do usuário recuperados: $userData');
 
-                    // Register button
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/cadastro'); // Navigate to CadastroPage
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF1C2C44), // Match background
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        side: const BorderSide(
-                            color: Colors.white), // Add border for contrast
-                        minimumSize:
-                            const Size.fromHeight(50), // Make button full-width
-                      ),
-                      child: const Text('Não tem uma conta? Registre-se',
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+      if (userData == null || userData['usuario'] != usuario) {
+        _showSnackBar('Usuário não encontrado.');
+      } else {
+        // Hashear a senha inserida
+        String hashedPassword = HashUtils.hashPassword(password);
+        print('Senha hasheada: $hashedPassword');
+        print('Senha armazenada: ${userData['password']}');
+
+        if (hashedPassword == userData['password']) {
+          // Login bem-sucedido
+          _showSnackBar('Login bem-sucedido!', isError: false);
+          Navigator.pushReplacementNamed(context, '/crypto');
+        } else {
+          _showSnackBar('Senha incorreta.');
+        }
+      }
+    } catch (e) {
+      _showSnackBar('Erro ao fazer login: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Função para exibir mensagem via SnackBar
+  void _showSnackBar(String message, {bool isError = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
       ),
     );
   }
 
-  /// Function to display the Forgot Password dialog
+  // Função para exibir o diálogo de "Esqueceu a senha?"
   void _showForgotPasswordDialog(BuildContext context) {
-    final TextEditingController _emailController = TextEditingController();
+    final TextEditingController _forgotPasswordUsuarioController =
+        TextEditingController();
 
     showDialog(
       context: context,
@@ -126,16 +92,15 @@ class LoginPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Por favor, insira seu e-mail para recuperar sua senha.',
+                'Por favor, insira seu usuário para recuperar sua senha.',
                 style: TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: _emailController,
+                controller: _forgotPasswordUsuarioController,
                 decoration: const InputDecoration(
-                  labelText: 'E-mail',
-                  labelStyle:
-                      TextStyle(fontSize: 14, color: Colors.white70),
+                  labelText: 'Usuário',
+                  labelStyle: TextStyle(fontSize: 14, color: Colors.white70),
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white70),
                   ),
@@ -143,7 +108,6 @@ class LoginPage extends StatelessWidget {
                     borderSide: BorderSide(color: Colors.white),
                   ),
                 ),
-                keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
               ),
             ],
@@ -155,7 +119,7 @@ class LoginPage extends StatelessWidget {
                 style: TextStyle(color: Colors.white70),
               ),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop(); // Fecha o diálogo
               },
             ),
             ElevatedButton(
@@ -166,26 +130,35 @@ class LoginPage extends StatelessWidget {
                 'Enviar',
                 style: TextStyle(color: Colors.black),
               ),
-              onPressed: () {
-                String email = _emailController.text.trim();
-                if (email.isNotEmpty && _validateEmail(email)) {
-                  // Handle password reset logic here
-                  // For demonstration, we'll just print the email
-                  print('Password reset requested for: $email');
+              onPressed: () async {
+                String usuario = _forgotPasswordUsuarioController.text.trim();
+                if (usuario.isNotEmpty && _validateUsuario(usuario)) {
+                  // Verifica se o usuário existe
+                  Map<String, dynamic>? userData =
+                      await _storageHelper.getUserData();
+                  if (userData != null && userData['usuario'] == usuario) {
+                    // Aqui você implementaria a lógica de redefinição de senha (e-mail, etc.)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Instruções de recuperação enviadas!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
 
-                  // Show a success message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Instruções de recuperação enviadas!'),
-                    ),
-                  );
-
-                  Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).pop(); // Fecha o diálogo
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Usuário não encontrado.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 } else {
-                  // Show an error message
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Por favor, insira um e-mail válido.'),
+                      content: Text('Por favor, insira um usuário válido.'),
+                      backgroundColor: Colors.red,
                     ),
                   );
                 }
@@ -197,17 +170,110 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  /// Simple email validation
-  bool _validateEmail(String email) {
-    final RegExp emailRegex = RegExp(
-        r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    return emailRegex.hasMatch(email);
+  // Validação simples do usuário
+  bool _validateUsuario(String usuario) {
+    return usuario.length >= 4;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF487187),
+      body: Center(
+        child: SingleChildScrollView( // Evita overflow em telas menores
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/logo.png', height: 150),
+                const SizedBox(height: 40),
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  width: 350,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C2C44),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _usuarioController,
+                        decoration: const InputDecoration(
+                          labelText: 'Usuário',
+                          labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                          filled: true,
+                          fillColor: Color(0xFF0B2A45),
+                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Aqui utilizamos o nosso PasswordField com o controller recebido por parâmetro
+                      PasswordField(controller: _passwordController),
+                      const SizedBox(height: 10),
+
+                      HoverableText(
+                        text: 'Esqueceu sua senha?',
+                        onTap: () {
+                          _showForgotPasswordDialog(context);
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _loginUser,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFCCAC53),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                              )
+                            : const Text('Entrar', style: TextStyle(color: Colors.black)),
+                      ),
+                      const SizedBox(height: 20),
+
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/cadastro');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1C2C44),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                          side: const BorderSide(color: Colors.white),
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                        child: const Text('Não tem uma conta? Registre-se',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
-/// Custom Password Field Widget with Show/Hide functionality
+// Widget de campo de senha personalizado que recebe o controller por parâmetro
 class PasswordField extends StatefulWidget {
-  const PasswordField({super.key});
+  final TextEditingController controller;
+
+  const PasswordField({required this.controller, Key? key}) : super(key: key);
 
   @override
   _PasswordFieldState createState() => _PasswordFieldState();
@@ -225,6 +291,7 @@ class _PasswordFieldState extends State<PasswordField> {
   @override
   Widget build(BuildContext context){
     return TextField(
+      controller: widget.controller,
       decoration: InputDecoration(
         labelText: 'Senha',
         labelStyle: const TextStyle(fontSize: 16, color: Colors.white),
@@ -250,7 +317,7 @@ class _PasswordFieldState extends State<PasswordField> {
   }
 }
 
-/// Custom Hoverable Text Widget
+// Texto "hoverable"
 class HoverableText extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
@@ -271,7 +338,7 @@ class _HoverableTextState extends State<HoverableText> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click, // Change cursor to pointer
+      cursor: SystemMouseCursors.click,
       onEnter: (_) {
         setState(() {
           _isHovering = true;
@@ -287,13 +354,10 @@ class _HoverableTextState extends State<HoverableText> {
         child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 200),
           style: TextStyle(
-            color: _isHovering
-                ? Colors.yellow.shade200 // Softer yellow on hover
-                : Colors.white70, // Default color
+            color: _isHovering ? Colors.yellow.shade200 : Colors.white70,
             fontSize: 14,
-            decoration: TextDecoration.none, // Remove underline
-            fontWeight:
-                _isHovering ? FontWeight.w600 : FontWeight.normal, // Slightly bold on hover
+            decoration: TextDecoration.none,
+            fontWeight: _isHovering ? FontWeight.w600 : FontWeight.normal,
           ),
           child: Text(widget.text),
         ),

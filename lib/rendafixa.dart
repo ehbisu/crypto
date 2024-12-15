@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'crypto.dart'; // Import the necessary pages
 import 'educacao.dart';
+import '../local_storage_helper.dart'; // Import LocalStorageHelper
 
 class RendaFixaPage extends StatefulWidget {
   const RendaFixaPage({Key? key}) : super(key: key);
@@ -23,6 +24,30 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
 
   int _selectedIndex = 0; // To track the selected bottom nav index
 
+  double _userSaldo = 0.0;
+  String _userName = "User";
+  final LocalStorageHelper _storageHelper = LocalStorageHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    double saldo = await _storageHelper.getUserSaldo();
+    Map<String, dynamic>? userData = await _storageHelper.getUserData();
+    String userName = "User";
+    if (userData != null && userData['usuario'] != null) {
+      userName = userData['usuario'];
+    }
+
+    setState(() {
+      _userSaldo = saldo;
+      _userName = userName;
+    });
+  }
+
   // Method to add a new investment
   void _addInvestment() {
     if (_valorController.text.isNotEmpty &&
@@ -30,12 +55,11 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
       setState(() {
         investments.add({
           'valor': _valorController.text,
-          'tipo': _selectedTipo, // Using selected application type
+          'tipo': _selectedTipo,
           'vencimento': _vencimentoController.text,
         });
       });
 
-      // Clear the form fields after adding
       _valorController.clear();
       _vencimentoController.clear();
     }
@@ -64,11 +88,6 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F1C33),
-      // Removed the AppBar to prevent duplication and extra space
-      // appBar: AppBar(
-      //   title: const Text('Renda Fixa'),
-      //   backgroundColor: const Color(0xFF0F1C33),
-      // ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -109,7 +128,6 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
   Widget _buildProfileSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      // Added vertical padding to compensate for the removed AppBar
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -120,31 +138,40 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
                 'EBISU',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 24, // Increased font size for emphasis
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
               RichText(
-                text: const TextSpan(
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                text: TextSpan(
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   children: [
-                    TextSpan(
+                    const TextSpan(
                       text: 'Saldo: ',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     TextSpan(
-                      text: '274.235,12',
-                      style: TextStyle(fontWeight: FontWeight.normal),
+                      text: _userSaldo.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.normal),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const CircleAvatar(
-            backgroundImage: AssetImage('assets/images/icon.png'),
-            radius: 30,
+          Row(
+            children: [
+              Text(
+                _userName,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(width: 8),
+              const CircleAvatar(
+                backgroundImage: AssetImage('assets/images/icon.png'),
+                radius: 30,
+              ),
+            ],
           ),
         ],
       ),
@@ -176,13 +203,11 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
               ),
             ),
             const SizedBox(height: 10),
-            _buildTextInputField(
-                'Valor da aplicação', 'R\$ 0.00', _valorController),
+            _buildTextInputField('Valor da aplicação', 'R\$ 0.00', _valorController),
             const SizedBox(height: 10),
             _buildDropdownInput('Tipo da aplicação', _selectedTipo, _tipos),
             const SizedBox(height: 10),
-            _buildTextInputField(
-                'Vencimento', 'Ex: 30 dias', _vencimentoController),
+            _buildTextInputField('Vencimento', 'Ex: 30 dias', _vencimentoController),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _addInvestment,
@@ -277,7 +302,6 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
     );
   }
 
-  // Builds the dynamic list of investments below the form
   Widget _buildInvestmentsList() {
     return Expanded(
       child: Padding(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'crypto.dart';
 import 'rendafixa.dart';
+import '../local_storage_helper.dart'; // Import LocalStorageHelper
 
 class EducacaoPage extends StatefulWidget {
   const EducacaoPage({super.key});
@@ -11,6 +12,30 @@ class EducacaoPage extends StatefulWidget {
 
 class _EducacaoPageState extends State<EducacaoPage> {
   int _selectedIndex = 2; // Definindo o índice inicial como 2 para a página atual
+
+  double _userSaldo = 0.0;
+  String _userName = "User";
+  final LocalStorageHelper _storageHelper = LocalStorageHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    double saldo = await _storageHelper.getUserSaldo();
+    Map<String, dynamic>? userData = await _storageHelper.getUserData();
+    String userName = "User";
+    if (userData != null && userData['usuario'] != null) {
+      userName = userData['usuario'];
+    }
+
+    setState(() {
+      _userSaldo = saldo;
+      _userName = userName;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -38,11 +63,11 @@ class _EducacaoPageState extends State<EducacaoPage> {
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            ProfileHeader(), // Cabeçalho com medidas iguais a CryptoPage
-            EducacaoTitle(),
-            EducacaoSubtitle(),
-            Expanded(
+          children: [
+            ProfileHeader(userName: _userName, userSaldo: _userSaldo),
+            const EducacaoTitle(),
+            const EducacaoSubtitle(),
+            const Expanded(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: InvestmentList(),
@@ -60,7 +85,10 @@ class _EducacaoPageState extends State<EducacaoPage> {
 }
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader();
+  final double userSaldo;
+  final String userName;
+
+  const ProfileHeader({required this.userName, required this.userSaldo});
 
   @override
   Widget build(BuildContext context) {
@@ -82,25 +110,34 @@ class ProfileHeader extends StatelessWidget {
               ),
               const SizedBox(height: 8), 
               RichText(
-                text: const TextSpan(
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                text: TextSpan(
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   children: [
-                    TextSpan(
+                    const TextSpan(
                       text: 'Saldo: ',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     TextSpan(
-                      text: '274.235,12',
-                      style: TextStyle(fontWeight: FontWeight.normal),
+                      text: userSaldo.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.normal),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const CircleAvatar(
-            backgroundImage: AssetImage('assets/images/icon.png'), 
-            radius: 30, 
+          Row(
+            children: [
+              Text(
+                userName,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(width: 8),
+              const CircleAvatar(
+                backgroundImage: AssetImage('assets/images/icon.png'), 
+                radius: 30, 
+              ),
+            ],
           ),
         ],
       ),
@@ -164,18 +201,18 @@ class InvestmentCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.9, // Ajustando para largura de 90% da tela
+        width: MediaQuery.of(context).size.width * 0.9,
         decoration: BoxDecoration(
           color: const Color(0xFF244673),
           borderRadius: BorderRadius.circular(10),
         ),
         child: ListTile(
           leading: Image.asset(
-            'images/agro.png', // Caminho correto da imagem
-            width: 80, // Tamanho da imagem
+            'images/agro.png',
+            width: 80,
             height: 60,
             errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.error, color: Colors.red); // Ícone de erro caso a imagem não carregue
+              return const Icon(Icons.error, color: Colors.red);
             },
           ),
           title: const Text(
