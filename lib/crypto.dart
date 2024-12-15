@@ -856,7 +856,7 @@ class _CryptoPageState extends State<CryptoPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Available Cryptocurrencies',
+          'Criptos para comprar',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
