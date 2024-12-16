@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 import 'crypto.dart';
 import 'cadastro.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 // Importação de LocalStorageHelper não é necessária aqui a menos que seja usada diretamente no main
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Não é mais necessário inicializar o banco de dados
-  // Todas as operações de armazenamento serão feitas via SharedPreferences
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
   runApp(const MyApp());
 }
 

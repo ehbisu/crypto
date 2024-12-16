@@ -1,7 +1,5 @@
-// lib/pages/login_page.dart
-
 import 'package:flutter/material.dart';
-import '../local_storage_helper.dart';
+import '../firebase_helper.dart';
 import '../hash_utils.dart'; // Utilidade de hash
 
 class LoginPage extends StatefulWidget {
@@ -12,12 +10,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // Comentário em português: Controllers para campos de texto.
   final TextEditingController _usuarioController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false; // Indica se o login está em andamento
-  final LocalStorageHelper _storageHelper = LocalStorageHelper();
+  final FirebaseHelper _firebaseHelper = FirebaseHelper();
 
   void _loginUser() async {
     String usuario = _usuarioController.text.trim();
@@ -35,11 +32,11 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // Recuperar dados do usuário
-      Map<String, dynamic>? userData = await _storageHelper.getUserData();
+      // Recuperar dados do usuário do Firebase
+      Map<String, dynamic>? userData = await _firebaseHelper.getUserData(usuario);
       print('Dados do usuário recuperados: $userData');
 
-      if (userData == null || userData['usuario'] != usuario) {
+      if (userData == null) {
         _showSnackBar('Usuário não encontrado.');
       } else {
         // Hashear a senha inserida
@@ -64,17 +61,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Função para exibir mensagem via SnackBar
-  void _showSnackBar(String message, {bool isError = true}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-      ),
-    );
-  }
-
-  // Função para exibir o diálogo de "Esqueceu a senha?"
   void _showForgotPasswordDialog(BuildContext context) {
     final TextEditingController _forgotPasswordUsuarioController =
         TextEditingController();
@@ -119,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(color: Colors.white70),
               ),
               onPressed: () {
-                Navigator.of(context).pop(); // Fecha o diálogo
+                Navigator.of(context).pop();
               },
             ),
             ElevatedButton(
@@ -133,11 +119,10 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: () async {
                 String usuario = _forgotPasswordUsuarioController.text.trim();
                 if (usuario.isNotEmpty && _validateUsuario(usuario)) {
-                  // Verifica se o usuário existe
+                  // Verifica se o usuário existe no Firebase
                   Map<String, dynamic>? userData =
-                      await _storageHelper.getUserData();
-                  if (userData != null && userData['usuario'] == usuario) {
-                    // Aqui você implementaria a lógica de redefinição de senha (e-mail, etc.)
+                      await _firebaseHelper.getUserData(usuario);
+                  if (userData != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Instruções de recuperação enviadas!'),
@@ -145,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     );
 
-                    Navigator.of(context).pop(); // Fecha o diálogo
+                    Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -170,9 +155,17 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Validação simples do usuário
   bool _validateUsuario(String usuario) {
     return usuario.length >= 4;
+  }
+
+  void _showSnackBar(String message, {bool isError = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 
   @override
@@ -180,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: const Color(0xFF487187),
       body: Center(
-        child: SingleChildScrollView( // Evita overflow em telas menores
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -201,7 +194,8 @@ class _LoginPageState extends State<LoginPage> {
                         controller: _usuarioController,
                         decoration: const InputDecoration(
                           labelText: 'Usuário',
-                          labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                          labelStyle:
+                              TextStyle(fontSize: 16, color: Colors.white),
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.white),
                           ),
@@ -211,11 +205,11 @@ class _LoginPageState extends State<LoginPage> {
                           filled: true,
                           fillColor: Color(0xFF0B2A45),
                         ),
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                       const SizedBox(height: 20),
 
-                      // Aqui utilizamos o nosso PasswordField com o controller recebido por parâmetro
                       PasswordField(controller: _passwordController),
                       const SizedBox(height: 10),
 
@@ -237,9 +231,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.black),
                               )
-                            : const Text('Entrar', style: TextStyle(color: Colors.black)),
+                            : const Text('Entrar',
+                                style: TextStyle(color: Colors.black)),
                       ),
                       const SizedBox(height: 20),
 
@@ -268,6 +264,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+// Outros widgets como PasswordField e HoverableText permanecem inalterados.
+
 
 // Widget de campo de senha personalizado que recebe o controller por parâmetro
 class PasswordField extends StatefulWidget {

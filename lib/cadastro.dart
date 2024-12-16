@@ -1,27 +1,22 @@
-// lib/pages/cadastro_page.dart
-
 import 'package:flutter/material.dart';
-import '../local_storage_helper.dart';
+import '../firebase_helper.dart';
 import '../hash_utils.dart'; // Importe a utilidade de hash
 
 class CadastroPage extends StatelessWidget {
   CadastroPage({super.key});
 
-  // Removido: final TextEditingController _nameController = TextEditingController();
   final TextEditingController _usuarioController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final LocalStorageHelper _storageHelper = LocalStorageHelper();
+  final FirebaseHelper _firebaseHelper = FirebaseHelper();
 
   void _registerUser(BuildContext context) async {
-    // Removido: String name = _nameController.text.trim();
     String usuario = _usuarioController.text.trim();
     String password = _passwordController.text.trim();
 
     print('Tentando registrar usuário: $usuario');
 
-    if (usuario.isNotEmpty && password.isNotEmpty) { // Alterado: Removido verificação de 'name'
-      // Validar formato de "usuario" se necessário
+    if (usuario.isNotEmpty && password.isNotEmpty) {
       if (!_validateUsuario(usuario)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Por favor, insira um usuário válido (mínimo 4 caracteres).')),
@@ -29,27 +24,24 @@ class CadastroPage extends StatelessWidget {
         return;
       }
 
-      // Hash the password before storing
       String hashedPassword = HashUtils.hashPassword(password);
 
       try {
-        // Verificar se já existe um usuário cadastrado com o mesmo "usuario"
-        Map<String, dynamic>? existingUser = await _storageHelper.getUserData();
-        if (existingUser != null && existingUser['usuario'] == usuario) {
+        // Verificar se o usuário já existe no Firestore
+        Map<String, dynamic>? existingUser = await _firebaseHelper.getUserData(usuario);
+        if (existingUser != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Usuário já está em uso.')),
           );
           return;
         }
 
-        // Salvar os dados do usuário sem o 'name'
-        await _storageHelper.saveUserData({
+        // Salvar os dados do novo usuário no Firestore
+        await _firebaseHelper.saveUserData(usuario, {
           'usuario': usuario,
           'password': hashedPassword,
+          'saldo': 0.0, // Inicializar o saldo do usuário
         });
-
-        // Inicializar saldo
-        await _storageHelper.saveUserSaldo(0.0);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Usuário registrado com sucesso!')),
@@ -58,7 +50,6 @@ class CadastroPage extends StatelessWidget {
         // Redirecionar para a página de Login
         Navigator.pushReplacementNamed(context, '/login');
       } catch (e) {
-        // Handle errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao registrar usuário: $e')),
         );
@@ -70,9 +61,8 @@ class CadastroPage extends StatelessWidget {
     }
   }
 
-  /// Simple usuario validation (implemente conforme necessário)
+  /// Validação simples do nome de usuário
   bool _validateUsuario(String usuario) {
-    // Exemplo: verificar se o usuario tem pelo menos 4 caracteres
     return usuario.length >= 4;
   }
 
@@ -83,7 +73,7 @@ class CadastroPage extends StatelessWidget {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView( // Evita overflow em telas pequenas
+          child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -98,9 +88,6 @@ class CadastroPage extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // Removido: const SizedBox(height: 20),
-                      // Removido: Campo de Nome
-
                       const SizedBox(height: 20),
                       TextField(
                         controller: _usuarioController,
@@ -144,8 +131,7 @@ class CadastroPage extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
-                          minimumSize:
-                              const Size.fromHeight(50), // Faz o botão ocupar a largura total
+                          minimumSize: const Size.fromHeight(50),
                         ),
                         child: const Text(
                           'Registrar',
