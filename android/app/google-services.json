@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "497984472938",
+    "project_id": "ebisu-b8894",
+    "storage_bucket": "ebisu-b8894.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:497984472938:android:826b9ba4c02a12a7a24713",
+        "android_client_info": {
+          "package_name": "com.example.crypto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhcZbMvTEjrrPH4rPaMm2aSmbkRvM5r3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
