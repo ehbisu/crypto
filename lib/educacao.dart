@@ -227,10 +227,6 @@ class ProfileHeader extends StatelessWidget {
           ),
           Row(
             children: [
-              Text(
-                userName,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
               const SizedBox(width: 8),
               const CircleAvatar(
                 backgroundImage: AssetImage('assets/images/icon.png'),
