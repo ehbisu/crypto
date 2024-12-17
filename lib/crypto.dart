@@ -535,10 +535,6 @@ class _CryptoPageState extends State<CryptoPage> {
         ),
         Row(
           children: [
-            Text(
-              _userName,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
-            ),
             const SizedBox(width: 8),
             const CircleAvatar(
               backgroundImage: AssetImage('assets/images/icon.png'),
