@@ -4,13 +4,16 @@ import 'crypto.dart';
 import 'cadastro.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-// Importação de LocalStorageHelper não é necessária aqui a menos que seja usada diretamente no main
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
   );
+    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+
   runApp(const MyApp());
 }
 

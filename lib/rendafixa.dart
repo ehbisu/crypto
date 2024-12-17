@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'crypto.dart'; // Import the necessary pages
+import 'firebase_helper.dart'; // Importa o FirebaseHelper
+import 'crypto.dart';
 import 'educacao.dart';
-import '../local_storage_helper.dart'; // Import LocalStorageHelper
 
 class RendaFixaPage extends StatefulWidget {
   const RendaFixaPage({Key? key}) : super(key: key);
@@ -12,60 +12,74 @@ class RendaFixaPage extends StatefulWidget {
 
 class _RendaFixaPageState extends State<RendaFixaPage> {
   // List to store investments
-  List<Map<String, String>> investments = [];
-
-  // Controllers for form fields
+  List<Map<String, dynamic>> investments = [];
   final TextEditingController _valorController = TextEditingController();
   final TextEditingController _vencimentoController = TextEditingController();
-
-  // Predefined options for the application type
-  String _selectedTipo = 'CDB'; // Default selected value
+  String _selectedTipo = 'CDB';
   final List<String> _tipos = ['CDB', 'LCI', 'LCA', 'Tesouro Direto'];
-
-  int _selectedIndex = 0; // To track the selected bottom nav index
-
+  int _selectedIndex = 0;
   double _userSaldo = 0.0;
   String _userName = "User";
-  final LocalStorageHelper _storageHelper = LocalStorageHelper();
+  final FirebaseHelper _firebaseHelper = FirebaseHelper();
+  final String userId = "userId"; // Substituir pelo ID do usuário autenticado
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadInvestments();
   }
 
   Future<void> _loadUserData() async {
-    double saldo = await _storageHelper.getUserSaldo();
-    Map<String, dynamic>? userData = await _storageHelper.getUserData();
-    String userName = "User";
-    if (userData != null && userData['usuario'] != null) {
-      userName = userData['usuario'];
-    }
+    try {
+      double saldo = await _firebaseHelper.getUserSaldo(userId);
+      Map<String, dynamic>? userData = await _firebaseHelper.getUserData(userId);
+      String userName = userData?['usuario'] ?? "User";
 
-    setState(() {
-      _userSaldo = saldo;
-      _userName = userName;
-    });
+      setState(() {
+        _userSaldo = saldo;
+        _userName = userName;
+      });
+    } catch (e) {
+      print('Erro ao carregar dados do usuário: $e');
+    }
   }
 
-  // Method to add a new investment
-  void _addInvestment() {
+  Future<void> _loadInvestments() async {
+    try {
+      List<Map<String, dynamic>> fetchedInvestments =
+          await _firebaseHelper.getInvestments(userId);
+
+      setState(() {
+        investments = fetchedInvestments;
+      });
+    } catch (e) {
+      print('Erro ao carregar investimentos: $e');
+    }
+  }
+
+  Future<void> _addInvestment() async {
     if (_valorController.text.isNotEmpty &&
         _vencimentoController.text.isNotEmpty) {
-      setState(() {
-        investments.add({
-          'valor': _valorController.text,
-          'tipo': _selectedTipo,
-          'vencimento': _vencimentoController.text,
-        });
-      });
+      final newInvestment = {
+        'valor': _valorController.text,
+        'tipo': _selectedTipo,
+        'vencimento': _vencimentoController.text,
+      };
 
-      _valorController.clear();
-      _vencimentoController.clear();
+      try {
+        await _firebaseHelper.addInvestment(userId, newInvestment);
+        setState(() {
+          investments.add(newInvestment);
+        });
+        _valorController.clear();
+        _vencimentoController.clear();
+      } catch (e) {
+        print('Erro ao adicionar investimento: $e');
+      }
     }
   }
 
-  // BottomNavigationBar callback
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -235,6 +249,63 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
     );
   }
 
+  Widget _buildInvestmentsList() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListView.builder(
+          itemCount: investments.length,
+          itemBuilder: (context, index) {
+            final investment = investments[index];
+            return _buildInvestmentItem(
+              investment['valor'] ?? '',
+              investment['tipo'] ?? '',
+              investment['vencimento'] ?? '',
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvestmentItem(String valor, String tipo, String vencimento) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 34, 51, 82),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFCCCC99),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Valor: $valor R\$',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              Text(
+                'Tipo: $tipo',
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              Text(
+                'Vencimento: $vencimento dias',
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+          const Icon(Icons.arrow_forward, color: Colors.white),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDropdownInput(
       String label, String selectedValue, List<String> options) {
     return Column(
@@ -299,63 +370,6 @@ class _RendaFixaPageState extends State<RendaFixaPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildInvestmentsList() {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: ListView.builder(
-          itemCount: investments.length,
-          itemBuilder: (context, index) {
-            final investment = investments[index];
-            return _buildInvestmentItem(
-              investment['valor'] ?? '',
-              investment['tipo'] ?? '',
-              investment['vencimento'] ?? '',
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInvestmentItem(String valor, String tipo, String vencimento) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 34, 51, 82),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFCCCC99),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Valor: $valor R\$',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              Text(
-                'Tipo: $tipo',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-              Text(
-                'Vencimento: $vencimento dias',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-          const Icon(Icons.arrow_forward, color: Colors.white),
-        ],
-      ),
     );
   }
 }
